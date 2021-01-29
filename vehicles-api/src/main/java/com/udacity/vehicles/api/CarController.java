@@ -4,6 +4,7 @@ package com.udacity.vehicles.api;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 
+import com.udacity.vehicles.domain.Location;
 import com.udacity.vehicles.domain.car.Car;
 import com.udacity.vehicles.service.CarService;
 import java.net.URI;
@@ -79,8 +80,12 @@ class CarController {
          * TODO: Use the `assembler` on that saved car and return as part of the response.
          *   Update the first line as part of the above implementing.
          */
-        Resource<Car> resource = assembler.toResource(new Car());
-        return ResponseEntity.created(new URI(resource.getId().expand().getHref())).body(resource);
+        car.setPrice(carService.webClientPricing.getPrice(4L));
+        car.setLocation(carService.webClientMaps.getAddress(new Location(30.0, 21.0)));
+        Car findCar = carService.save(car);
+
+        Resource<Car> resource = assembler.toResource(findCar);
+        return ResponseEntity.created(new URI(resource.getId().expand().getHref())).body(findCar);
     }
 
     /**
