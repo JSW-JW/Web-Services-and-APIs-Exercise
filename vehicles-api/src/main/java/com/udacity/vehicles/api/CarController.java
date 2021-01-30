@@ -80,12 +80,16 @@ class CarController {
          * TODO: Use the `assembler` on that saved car and return as part of the response.
          *   Update the first line as part of the above implementing.
          */
-        car.setPrice(carService.webClientPricing.getPrice(4L));
-        car.setLocation(carService.webClientMaps.getAddress(new Location(30.0, 21.0)));
-        Car findCar = carService.save(car);
+//        Location location = carService.webClientMaps.getAddress(new Location(car.getLocation().getLat(), car.getLocation().getLon()));
+//        location.setLat(car.getLocation().getLat());
+//        location.setLon(car.getLocation().getLon());
+//        car.setLocation(location);
+        // need not save 'Location' & 'Price' in the save operation.
+        // In the 'Read' operation, it's gonna fetch these data each time they're called based on their 'lat, lon' & 'vehicleId'
+        Car saveCar = carService.save(car);
 
-        Resource<Car> resource = assembler.toResource(findCar);
-        return ResponseEntity.created(new URI(resource.getId().expand().getHref())).body(findCar);
+        Resource<Car> resource = assembler.toResource(saveCar);
+        return ResponseEntity.created(new URI(resource.getId().expand().getHref())).body(saveCar);
     }
 
     /**
