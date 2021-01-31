@@ -22,11 +22,16 @@ import com.udacity.vehicles.domain.Location;
 import com.udacity.vehicles.domain.car.Car;
 import com.udacity.vehicles.domain.car.Details;
 import com.udacity.vehicles.domain.manufacturer.Manufacturer;
+import com.udacity.vehicles.service.CarNotFoundException;
 import com.udacity.vehicles.service.CarService;
 
 import java.math.BigDecimal;
 import java.net.URI;
 import java.util.Collections;
+
+import javassist.NotFoundException;
+import org.assertj.core.api.Assertions;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -131,18 +136,29 @@ public class CarControllerTest {
          *   a vehicle by ID. This should utilize the car from `getCar()` below.
          */
         Car car = getCar();
-        car.setId(1L);
-        Location location = mapsClient.getAddress(new Location(car.getLocation().getLat(), car.getLocation().getLon()));
-        String price = priceClient.getPrice(car.getId());
-        car.setLocation(location);
-        car.setPrice(price);
+//        Location location = mapsClient.getAddress(new Location(car.getLocation().getLat(), car.getLocation().getLon()));
+//        String price = priceClient.getPrice(car.getId());
+//        car.setLocation(location);
+//        car.setPrice(price);
         mvc.perform(
                 get("/cars/{id}", 1L)
-                    .content(json.write(car).getJson())
                     .contentType(MediaType.APPLICATION_JSON_UTF8)
                     .accept(MediaType.APPLICATION_JSON_UTF8))
                 .andDo(print())
-                .andExpect(status().isOk());
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.details.body", is(car.getDetails().getBody())))
+                .andExpect(jsonPath("$.details.model", is(car.getDetails().getModel())))
+                .andExpect(jsonPath("$.details.manufacturer.code", is(car.getDetails().getManufacturer().getCode())))
+                .andExpect(jsonPath("$.details.manufacturer.name", is(car.getDetails().getManufacturer().getName())))
+                .andExpect(jsonPath("$.details.numberOfDoors", is(car.getDetails().getNumberOfDoors())))
+                .andExpect(jsonPath("$.details.fuelType", is(car.getDetails().getFuelType())))
+                .andExpect(jsonPath("$.details.mileage", is(car.getDetails().getMileage())))
+                .andExpect(jsonPath("$.details.modelYear", is(car.getDetails().getModelYear())))
+                .andExpect(jsonPath("$.details.productionYear", is(car.getDetails().getProductionYear())))
+                .andExpect(jsonPath("$.details.externalColor", is(car.getDetails().getExternalColor())))
+                .andExpect(jsonPath("$.details.engine", is(car.getDetails().getEngine())))
+                .andExpect(jsonPath("$.id", is(1)));
+        verify(carService, Mockito.times(1)).findById(any(Long.class));
     }
 
     /**
@@ -156,6 +172,15 @@ public class CarControllerTest {
          *   when the `delete` method is called from the Car Controller. This
          *   should utilize the car from `getCar()` below.
          */
+        Car car = getCar();
+        mvc.perform(
+                delete("/cars/{id}",1L)
+                        .contentType(MediaType.APPLICATION_JSON_UTF8)
+                        .accept(MediaType.APPLICATION_JSON_UTF8))
+                .andDo(print())
+                .andExpect(status().isNoContent());
+        verify(carService, Mockito.times(1)).delete(any(Long.class));
+        /* TODO : Check if it's been deleted appropriately with carService.findById() method. */
     }
 
     /**

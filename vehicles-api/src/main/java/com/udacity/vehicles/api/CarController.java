@@ -3,6 +3,7 @@ package com.udacity.vehicles.api;
 
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
+import static org.springframework.http.ResponseEntity.ok;
 
 import com.udacity.vehicles.domain.Location;
 import com.udacity.vehicles.domain.car.Car;
@@ -64,7 +65,11 @@ class CarController {
          * TODO: Use the `assembler` on that car and return the resulting output.
          *   Update the first line as part of the above implementing.
          */
-        return assembler.toResource(new Car());
+        Car findCar = carService.findById(id);
+
+
+        Resource<Car> resource = assembler.toResource(findCar);
+        return resource;
     }
 
     /**
@@ -107,7 +112,7 @@ class CarController {
          *   Update the first line as part of the above implementing.
          */
         Resource<Car> resource = assembler.toResource(new Car());
-        return ResponseEntity.ok(resource);
+        return ok(resource);
     }
 
     /**
@@ -120,6 +125,9 @@ class CarController {
         /**
          * TODO: Use the Car Service to delete the requested vehicle.
          */
+        carService.delete(id);
+
+
         return ResponseEntity.noContent().build();
     }
 }
