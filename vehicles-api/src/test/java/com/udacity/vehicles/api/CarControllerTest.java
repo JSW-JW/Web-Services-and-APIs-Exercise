@@ -180,6 +180,7 @@ public class CarControllerTest {
                 .andDo(print())
                 .andExpect(status().isNoContent());
         verify(carService, Mockito.times(1)).delete(any(Long.class));
+        Assertions.assertThat(carService.findById(1L)).isEqualTo(NotFoundException.class);
         /* TODO : Check if it's been deleted appropriately with carService.findById() method. */
     }
 
