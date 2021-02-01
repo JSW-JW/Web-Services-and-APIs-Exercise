@@ -1,20 +1,20 @@
-insert into price (id, currency, price, vehicleId) values (1, USD, 24490.10, 1)
-insert into price (id, currency, price, vehicleId) values (2, USD, 21623.64, 2)
-insert into price (id, currency, price, vehicleId) values (3, USD, 11798.85, 3)
-insert into price (id, currency, price, vehicleId) values (4, USD, 10092.11, 4)
-insert into price (id, currency, price, vehicleId) values (5, USD, 19102.63, 5)
-insert into price (id, currency, price, vehicleId) values (6, USD, 24436.92, 6)
-insert into price (id, currency, price, vehicleId) values (7, USD, 18656.60, 7)
-insert into price (id, currency, price, vehicleId) values (8, USD, 23518.90, 8)
-insert into price (id, currency, price, vehicleId) values (9, USD, 21437.58, 9)
-insert into price (id, currency, price, vehicleId) values (10, USD, 16634.80, 10)
-insert into price (id, currency, price, vehicleId) values (11, USD, 8228.13, 11)
-insert into price (id, currency, price, vehicleId) values (12, USD, 8227.41, 12)
-insert into price (id, currency, price, vehicleId) values (13, USD, 10138.54, 13)
-insert into price (id, currency, price, vehicleId) values (14, USD, 20235.49, 14)
-insert into price (id, currency, price, vehicleId) values (15, USD, 20859.90, 15)
-insert into price (id, currency, price, vehicleId) values (16, USD, 12465.23, 16)
-insert into price (id, currency, price, vehicleId) values (17, USD, 6967.34	, 17)
-insert into price (id, currency, price, vehicleId) values (18, USD, 10691.70, 18)
-insert into price (id, currency, price, vehicleId) values (19, USD, 8935.32, 19)
-insert into price (id, currency, price, vehicleId) values (20, USD, 18330.56, 20)
+INSERT INTO price (id, currency, price, vehicle_id) VALUES (1, 'USD', 16630.05, 1);
+INSERT INTO price (id, currency, price, vehicle_id) VALUES (2, 'USD',26630.05, 2);
+INSERT INTO price (id, currency, price, vehicle_id) VALUES (3, 'USD',36630.05, 3);
+INSERT INTO price (id, currency, price, vehicle_id) VALUES (4, 'USD',46630.05, 4);
+INSERT INTO price (id, currency, price, vehicle_id) VALUES (5, 'USD',56630.05, 5);
+INSERT INTO price (id, currency, price, vehicle_id) VALUES (6, 'USD',66630.05, 6);
+INSERT INTO price (id, currency, price, vehicle_id) VALUES (7, 'USD',76630.05, 7);
+INSERT INTO price (id, currency, price, vehicle_id) VALUES (8, 'USD',86630.05, 8);
+INSERT INTO price (id, currency, price, vehicle_id) VALUES (9, 'USD',96630.05, 9);
+INSERT INTO price (id, currency, price, vehicle_id) VALUES (10, 'USD',106630.05, 10);
+INSERT INTO price (id, currency, price, vehicle_id) VALUES (11, 'USD',116630.05, 11);
+INSERT INTO price (id, currency, price, vehicle_id) VALUES (12, 'USD',126630.05, 12);
+INSERT INTO price (id, currency, price, vehicle_id) VALUES (13, 'USD',136630.05, 13);
+INSERT INTO price (id, currency, price, vehicle_id) VALUES (14, 'USD',146630.05, 14);
+INSERT INTO price (id, currency, price, vehicle_id) VALUES (15, 'USD',156630.05, 15);
+INSERT INTO price (id, currency, price, vehicle_id) VALUES (16, 'USD',166630.05, 16);
+INSERT INTO price (id, currency, price, vehicle_id) VALUES (17, 'USD',176630.05, 17);
+INSERT INTO price (id, currency, price, vehicle_id) VALUES (18, 'USD',186630.05, 18);
+INSERT INTO price (id, currency, price, vehicle_id) VALUES (19, 'USD',196630.05, 19);
+INSERT INTO price (id, currency, price, vehicle_id) VALUES (20, 'USD',206630.05, 20);
