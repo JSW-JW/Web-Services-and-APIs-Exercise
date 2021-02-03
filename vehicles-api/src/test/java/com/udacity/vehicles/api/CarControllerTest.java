@@ -6,9 +6,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.client.ExpectedCount.times;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -122,7 +120,26 @@ public class CarControllerTest {
          *   the whole list of vehicles. This should utilize the car from `getCar()`
          *   below (the vehicle will be the first in the list).
          */
-
+        Car car = getCar();
+        String root = "$._embedded.carList[0]";
+        mvc.perform(
+                get(new URI("/cars"))
+                        .contentType(MediaType.APPLICATION_JSON_UTF8)
+                        .accept(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath(root + ".details.body", is(car.getDetails().getBody())))
+                .andExpect(jsonPath(root + ".details.model", is(car.getDetails().getModel())))
+                .andExpect(jsonPath(root + ".details.manufacturer.code", is(car.getDetails().getManufacturer().getCode())))
+                .andExpect(jsonPath(root + ".details.manufacturer.name", is(car.getDetails().getManufacturer().getName())))
+                .andExpect(jsonPath(root + ".details.numberOfDoors", is(car.getDetails().getNumberOfDoors())))
+                .andExpect(jsonPath(root + ".details.fuelType", is(car.getDetails().getFuelType())))
+                .andExpect(jsonPath(root + ".details.mileage", is(car.getDetails().getMileage())))
+                .andExpect(jsonPath(root + ".details.modelYear", is(car.getDetails().getModelYear())))
+                .andExpect(jsonPath(root + ".details.productionYear", is(car.getDetails().getProductionYear())))
+                .andExpect(jsonPath(root + ".details.externalColor", is(car.getDetails().getExternalColor())))
+                .andExpect(jsonPath(root + ".details.engine", is(car.getDetails().getEngine())))
+                .andExpect(jsonPath(root + ".id", is(1)));
+        verify(carService, Mockito.times(1)).list();
     }
 
     /**
@@ -161,6 +178,35 @@ public class CarControllerTest {
         verify(carService, Mockito.times(1)).findById(any(Long.class));
     }
 
+    @Test
+    public void updateCar() throws Exception {
+        Car car = getCar();
+        car.getDetails().setFuelType("Hydrogen");
+        car.getDetails().setBody("Updated Car");
+        car.getDetails().setExternalColor("SuperDuper color");
+
+        mvc.perform(
+                put("/cars/{id}", 1L)
+                        .content(json.write(car).getJson())
+                        .contentType(MediaType.APPLICATION_JSON_UTF8)
+                        .accept(MediaType.APPLICATION_JSON_UTF8))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.details.body", is(car.getDetails().getBody())))
+                .andExpect(jsonPath("$.details.model", is(car.getDetails().getModel())))
+                .andExpect(jsonPath("$.details.manufacturer.code", is(car.getDetails().getManufacturer().getCode())))
+                .andExpect(jsonPath("$.details.manufacturer.name", is(car.getDetails().getManufacturer().getName())))
+                .andExpect(jsonPath("$.details.numberOfDoors", is(car.getDetails().getNumberOfDoors())))
+                .andExpect(jsonPath("$.details.fuelType", is(car.getDetails().getFuelType())))
+                .andExpect(jsonPath("$.details.mileage", is(car.getDetails().getMileage())))
+                .andExpect(jsonPath("$.details.modelYear", is(car.getDetails().getModelYear())))
+                .andExpect(jsonPath("$.details.productionYear", is(car.getDetails().getProductionYear())))
+                .andExpect(jsonPath("$.details.externalColor", is(car.getDetails().getExternalColor())))
+                .andExpect(jsonPath("$.details.engine", is(car.getDetails().getEngine())))
+                .andExpect(jsonPath("$.id", is(1)));
+        verify(carService, Mockito.times(1)).save(any(Car.class));
+    }
+
     /**
      * Tests the deletion of a single car by ID.
      * @throws Exception if the delete operation of a vehicle fails
@@ -174,9 +220,7 @@ public class CarControllerTest {
          */
         Car car = getCar();
         mvc.perform(
-                delete("/cars/{id}",1L)
-                        .contentType(MediaType.APPLICATION_JSON_UTF8)
-                        .accept(MediaType.APPLICATION_JSON_UTF8))
+                delete(new URI("/cars/1")))
                 .andDo(print())
                 .andExpect(status().isNoContent());
         verify(carService, Mockito.times(1)).delete(any(Long.class));
