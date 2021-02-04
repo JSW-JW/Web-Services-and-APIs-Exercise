@@ -62,6 +62,9 @@ public class VehiclesApiApplication {
      * @param endpoint where to communicate for the pricing API
      * @return created pricing endpoint
      */
+    public static final String ACCOUNTS_SERVICE_URL
+            = "http://pricing-service";
+
     @Bean(name="pricing")
     public WebClient webClientPricing(@Value("${pricing.endpoint}") String endpoint) {
         return WebClient.create(endpoint);

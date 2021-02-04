@@ -29,6 +29,16 @@ public class Price {
         this.vehicleId = vehicleId;
     }
 
+    @Override
+    public String toString() {
+        return "Price{" +
+                "id=" + id +
+                ", currency='" + currency + '\'' +
+                ", price=" + price +
+                ", vehicleId=" + vehicleId +
+                '}';
+    }
+
     public String getCurrency() {
         return currency;
     }
