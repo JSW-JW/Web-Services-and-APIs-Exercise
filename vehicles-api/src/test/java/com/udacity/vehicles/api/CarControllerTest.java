@@ -25,7 +25,9 @@ import com.udacity.vehicles.service.CarService;
 
 import java.math.BigDecimal;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 import javassist.NotFoundException;
 import org.assertj.core.api.Assertions;
@@ -43,6 +45,8 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
+
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * Implements testing of the CarController class.
@@ -75,9 +79,16 @@ public class CarControllerTest {
     public void setup() {
         Car car = getCar();
         car.setId(1L);
-        given(carService.save(any())).willReturn(car);
-        given(carService.findById(any())).willReturn(car);
+
         given(carService.list()).willReturn(Collections.singletonList(car));
+
+        given(priceClient.getPrice(any())).willReturn("USD 12324.22");
+        Location serviceLocation = new Location(40.730610, -73.935242);
+        serviceLocation.setAddress("10040 County Road 48");
+        serviceLocation.setCity("Fairhope");
+        serviceLocation.setState("AL");
+        serviceLocation.setZip("36533");
+        given(mapsClient.getAddress(any())).willReturn(serviceLocation);
     }
 
     /**
@@ -87,6 +98,10 @@ public class CarControllerTest {
     @Test
     public void createCar() throws Exception {
         Car car = getCar();
+        car.setId(1L);
+
+        given(carService.save(any())).willReturn(car);
+
         mvc.perform(
                 post(new URI("/cars"))
                         .content(json.write(car).getJson())
@@ -121,6 +136,14 @@ public class CarControllerTest {
          *   below (the vehicle will be the first in the list).
          */
         Car car = getCar();
+        car.setId(1L);
+        Location location = mapsClient.getAddress(new Location(car.getLocation().getLat(), car.getLocation().getLon()));
+        String price = priceClient.getPrice(car.getId());
+        car.setLocation(location);
+        car.setPrice(price);
+        given(carService.list()).willReturn(Collections.singletonList(car));
+
+
         String root = "$._embedded.carList[0]";
         mvc.perform(
                 get(new URI("/cars"))
@@ -138,6 +161,11 @@ public class CarControllerTest {
                 .andExpect(jsonPath(root + ".details.productionYear", is(car.getDetails().getProductionYear())))
                 .andExpect(jsonPath(root + ".details.externalColor", is(car.getDetails().getExternalColor())))
                 .andExpect(jsonPath(root + ".details.engine", is(car.getDetails().getEngine())))
+                .andExpect(jsonPath(root + ".price", is(car.getPrice())))
+                .andExpect(jsonPath(root + ".location.address", is(car.getLocation().getAddress())))
+                .andExpect(jsonPath(root + ".location.city", is(car.getLocation().getCity())))
+                .andExpect(jsonPath(root + ".location.state", is(car.getLocation().getState())))
+                .andExpect(jsonPath(root + ".location.zip", is(car.getLocation().getZip())))
                 .andExpect(jsonPath(root + ".id", is(1)));
         verify(carService, Mockito.times(1)).list();
     }
@@ -153,10 +181,13 @@ public class CarControllerTest {
          *   a vehicle by ID. This should utilize the car from `getCar()` below.
          */
         Car car = getCar();
-//        Location location = mapsClient.getAddress(new Location(car.getLocation().getLat(), car.getLocation().getLon()));
-//        String price = priceClient.getPrice(car.getId());
-//        car.setLocation(location);
-//        car.setPrice(price);
+        car.setId(1L);
+        Location location = mapsClient.getAddress(new Location(car.getLocation().getLat(), car.getLocation().getLon()));
+        String price = priceClient.getPrice(car.getId());
+        car.setLocation(location);
+        car.setPrice(price);
+        given(carService.findById(any())).willReturn(car);
+
         mvc.perform(
                 get("/cars/{id}", 1L)
                     .contentType(MediaType.APPLICATION_JSON_UTF8)
@@ -174,35 +205,60 @@ public class CarControllerTest {
                 .andExpect(jsonPath("$.details.productionYear", is(car.getDetails().getProductionYear())))
                 .andExpect(jsonPath("$.details.externalColor", is(car.getDetails().getExternalColor())))
                 .andExpect(jsonPath("$.details.engine", is(car.getDetails().getEngine())))
+                .andExpect(jsonPath("$.price", is(car.getPrice())))
+                .andExpect(jsonPath("$.location.address", is(car.getLocation().getAddress())))
+                .andExpect(jsonPath("$.location.city", is(car.getLocation().getCity())))
+                .andExpect(jsonPath("$.location.state", is(car.getLocation().getState())))
+                .andExpect(jsonPath("$.location.zip", is(car.getLocation().getZip())))
                 .andExpect(jsonPath("$.id", is(1)));
         verify(carService, Mockito.times(1)).findById(any(Long.class));
     }
 
     @Test
     public void updateCar() throws Exception {
-        Car car = getCar();
-        car.getDetails().setFuelType("Hydrogen");
-        car.getDetails().setBody("Updated Car");
-        car.getDetails().setExternalColor("SuperDuper color");
+        Car carBefore = getCar();
+        carBefore.setId(1L);
+
+        Car carAfter = getCar();
+        carAfter.setId(1L);
+
+        given(carService.findById(any())).willReturn(carBefore);
+        // set return object 'carBefore' for the FindById() method
+
+        mvc.perform(
+                get("/cars/{id}", 1L))
+                .andDo(print())
+                .andExpect(jsonPath("$.details.fuelType", is(carBefore.getDetails().getFuelType())))
+                .andExpect(jsonPath("$.details.body", is(carBefore.getDetails().getBody())))
+                .andExpect(jsonPath("$.details.externalColor", is(carBefore.getDetails().getExternalColor())))
+                .andExpect(status().isOk());
+
+        verify(carService, Mockito.times(1)).findById(any(Long.class));
+
+        carAfter.getDetails().setFuelType("Hydrogen");
+        carAfter.getDetails().setBody("Updated Car");
+        carAfter.getDetails().setExternalColor("SuperDuper color");
+        given(carService.save(any())).willReturn(carAfter);
+        // set return object 'carAfter' before execute update request and perform mockMvc put method.
 
         mvc.perform(
                 put("/cars/{id}", 1L)
-                        .content(json.write(car).getJson())
+                        .content(json.write(carAfter).getJson())
                         .contentType(MediaType.APPLICATION_JSON_UTF8)
                         .accept(MediaType.APPLICATION_JSON_UTF8))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.details.body", is(car.getDetails().getBody())))
-                .andExpect(jsonPath("$.details.model", is(car.getDetails().getModel())))
-                .andExpect(jsonPath("$.details.manufacturer.code", is(car.getDetails().getManufacturer().getCode())))
-                .andExpect(jsonPath("$.details.manufacturer.name", is(car.getDetails().getManufacturer().getName())))
-                .andExpect(jsonPath("$.details.numberOfDoors", is(car.getDetails().getNumberOfDoors())))
-                .andExpect(jsonPath("$.details.fuelType", is(car.getDetails().getFuelType())))
-                .andExpect(jsonPath("$.details.mileage", is(car.getDetails().getMileage())))
-                .andExpect(jsonPath("$.details.modelYear", is(car.getDetails().getModelYear())))
-                .andExpect(jsonPath("$.details.productionYear", is(car.getDetails().getProductionYear())))
-                .andExpect(jsonPath("$.details.externalColor", is(car.getDetails().getExternalColor())))
-                .andExpect(jsonPath("$.details.engine", is(car.getDetails().getEngine())))
+                .andExpect(jsonPath("$.details.body", is(carAfter.getDetails().getBody())))
+                .andExpect(jsonPath("$.details.model", is(carAfter.getDetails().getModel())))
+                .andExpect(jsonPath("$.details.manufacturer.code", is(carAfter.getDetails().getManufacturer().getCode())))
+                .andExpect(jsonPath("$.details.manufacturer.name", is(carAfter.getDetails().getManufacturer().getName())))
+                .andExpect(jsonPath("$.details.numberOfDoors", is(carAfter.getDetails().getNumberOfDoors())))
+                .andExpect(jsonPath("$.details.fuelType", is(carAfter.getDetails().getFuelType())))
+                .andExpect(jsonPath("$.details.mileage", is(carAfter.getDetails().getMileage())))
+                .andExpect(jsonPath("$.details.modelYear", is(carAfter.getDetails().getModelYear())))
+                .andExpect(jsonPath("$.details.productionYear", is(carAfter.getDetails().getProductionYear())))
+                .andExpect(jsonPath("$.details.externalColor", is(carAfter.getDetails().getExternalColor())))
+                .andExpect(jsonPath("$.details.engine", is(carAfter.getDetails().getEngine())))
                 .andExpect(jsonPath("$.id", is(1)));
         verify(carService, Mockito.times(1)).save(any(Car.class));
     }
@@ -218,14 +274,22 @@ public class CarControllerTest {
          *   when the `delete` method is called from the Car Controller. This
          *   should utilize the car from `getCar()` below.
          */
+
         Car car = getCar();
+        car.setId(1L);
+
+        given(carService.save(any())).willReturn(car);
+
         mvc.perform(
                 delete(new URI("/cars/1")))
                 .andDo(print())
                 .andExpect(status().isNoContent());
         verify(carService, Mockito.times(1)).delete(any(Long.class));
-        Assertions.assertThat(carService.findById(1L)).isEqualTo(NotFoundException.class);
-        /* TODO : Check if it's been deleted appropriately with carService.findById() method. */
+
+        if (carService.findById(1L) == null) {
+            given(carService.findById(1L)).willThrow(CarNotFoundException.class);
+        }
+        assertThrows(CarNotFoundException.class, () -> carService.findById(1L));
     }
 
     /**

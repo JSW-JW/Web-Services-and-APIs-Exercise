@@ -50,13 +50,18 @@ public class CarService {
      * @param id the ID number of the car to gather information on
      * @return the requested car's information, including location and price
      */
-    public Car findById(Long id) {
+    public Car findById(Long id) throws CarNotFoundException {
         /**
          * TODO: Find the car by ID from the `repository` if it exists.
          *   If it does not exist, throw a CarNotFoundException
          *   Remove the below code as part of your implementation.
          */
-        Car car = repository.findById(id).orElseThrow(CarNotFoundException::new);
+        Optional<Car> optionalCar = repository.findById(id);
+        if (optionalCar.isEmpty()) {
+            throw new CarNotFoundException();
+        }
+        Car car = optionalCar.get();
+
 
         /**
          * TODO: Use the Pricing Web client you create in `VehiclesApiApplication`
