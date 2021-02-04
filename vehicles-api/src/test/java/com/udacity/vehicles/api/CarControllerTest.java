@@ -124,8 +124,8 @@ public class CarControllerTest {
         String root = "$._embedded.carList[0]";
         mvc.perform(
                 get(new URI("/cars"))
-                        .contentType(MediaType.APPLICATION_JSON_UTF8)
-                        .accept(MediaType.APPLICATION_JSON_UTF8))
+                        )
+                .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath(root + ".details.body", is(car.getDetails().getBody())))
                 .andExpect(jsonPath(root + ".details.model", is(car.getDetails().getModel())))
