@@ -1,14 +1,21 @@
 package com.udacity.vehicles.service;
 
+import com.sun.tools.rngom.util.Uri;
 import com.udacity.vehicles.client.maps.MapsClient;
+import com.udacity.vehicles.client.prices.Price;
 import com.udacity.vehicles.client.prices.PriceClient;
 import com.udacity.vehicles.domain.Location;
 import com.udacity.vehicles.domain.car.Car;
 import com.udacity.vehicles.domain.car.CarRepository;
+
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriBuilder;
+import org.springframework.web.util.UriComponentsBuilder;
 
 /**
  * Implements the car service create, read, update or delete
@@ -19,10 +26,11 @@ import org.springframework.stereotype.Service;
 public class CarService {
 
     private final CarRepository repository;
+    private final RestTemplate restTemplate;
     public final PriceClient webClientPricing;
     public final MapsClient webClientMaps;
 
-    public CarService(CarRepository repository, PriceClient webClientPricing, MapsClient webClientMaps) {
+    public CarService(CarRepository repository, PriceClient webClientPricing, MapsClient webClientMaps, RestTemplate restTemplate) {
         /**
          * TODO: Add the Maps and Pricing Web Clients you create
          *   in `VehiclesApiApplication` as arguments and set them here.
@@ -30,15 +38,17 @@ public class CarService {
         this.webClientPricing = webClientPricing;
         this.webClientMaps = webClientMaps;
         this.repository = repository;
+        this.restTemplate = restTemplate;
     }
 
     /**
      * Gathers a list of all vehicles
+     *
      * @return a list of all vehicles in the CarRepository
      */
     public List<Car> list() {
         List<Car> cars = repository.findAll();
-        for (Car car: cars) {
+        for (Car car : cars) {
             car.setPrice(webClientPricing.getPrice(car.getId()));
             car.setLocation(webClientMaps.getAddress(new Location(car.getLocation().getLat(), car.getLocation().getLon())));
         }
@@ -47,6 +57,7 @@ public class CarService {
 
     /**
      * Gets car information by ID (or throws exception if non-existent)
+     *
      * @param id the ID number of the car to gather information on
      * @return the requested car's information, including location and price
      */
@@ -70,9 +81,17 @@ public class CarService {
          * Note: The car class file uses @transient, meaning you will need to call
          *   the pricing service each time to get the price.
          */
-        String price = webClientPricing.getPrice(id);
+//        String price = "";
+//        Price servicePrice = restTemplate.getForObject("http://pricing-service/prices?vehicleId={id}", Price.class, id);
+//        if (servicePrice != null) {
+//            price = String.format("%s %s", servicePrice.getCurrency(), servicePrice.getPrice());
+//        }
+//        else {
+//            price = "Unexpected error retrieving price for vehicle";
+//        }
+        // TODO: this is how to consume end-service with RestTemplate.
 
-
+        String price = webClientPricing.getPrice(id); // consume end-service with WebClient and client application name.
         /**
          * TODO: Use the Maps Web client you create in `VehiclesApiApplication`
          *   to get the address for the vehicle. You should access the location
@@ -81,6 +100,7 @@ public class CarService {
          * Note: The Location class file also uses @transient for the address,
          * meaning the Maps service needs to be called each time for the address.
          */
+
         Location location = webClientMaps.getAddress(car.getLocation());
 
         car.setPrice(price);
@@ -90,6 +110,7 @@ public class CarService {
 
     /**
      * Either creates or updates a vehicle, based on prior existence of car
+     *
      * @param car A car object, which can be either new or existing
      * @return the new/updated car is stored in the repository
      */
@@ -109,6 +130,7 @@ public class CarService {
 
     /**
      * Deletes a given car by ID
+     *
      * @param id the ID number of the car to delete
      */
     public void delete(Long id) {
@@ -123,10 +145,9 @@ public class CarService {
          *   If it does not exist, throw a CarNotFoundException
          */
         Optional<Car> optionalCar = repository.findById(id);
-        if(optionalCar.isPresent()) {
+        if (optionalCar.isPresent()) {
             repository.deleteById(id);
-        }
-        else {
+        } else {
             throw new CarNotFoundException("Car Not Found");
         }
 

@@ -5,6 +5,7 @@ import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 import static org.springframework.http.ResponseEntity.ok;
 
+import com.udacity.vehicles.client.prices.Price;
 import com.udacity.vehicles.domain.Location;
 import com.udacity.vehicles.domain.car.Car;
 import com.udacity.vehicles.service.CarService;
@@ -27,6 +28,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.RestTemplate;
 
 /**
  * Implements a REST-based controller for the Vehicles API.
@@ -42,10 +44,12 @@ class CarController {
 
     private final CarService carService;
     private final CarResourceAssembler assembler;
+    private final RestTemplate restTemplate;
 
-    CarController(CarService carService, CarResourceAssembler assembler) {
+    CarController(CarService carService, CarResourceAssembler assembler, RestTemplate restTemplate) {
         this.carService = carService;
         this.assembler = assembler;
+        this.restTemplate = restTemplate;
     }
 
     /**
